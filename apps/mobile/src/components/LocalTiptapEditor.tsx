@@ -8,6 +8,7 @@ import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
 import { EditorContent, Extension, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { EdgeEverLink } from "@edgeever/shared/editor-link";
 import * as Clipboard from "expo-clipboard";
 import {
   AI_SELECTED_TEXT_ACTIONS,
@@ -30,6 +31,7 @@ import {
   prepareNativeEditorContent,
   restoreNativeEditorContent,
   getImageReferrerPolicy,
+  ImageGallery,
   getResourceIdFromUrl,
   type AiAction,
   type AiPromptParameterKind,
@@ -72,6 +74,7 @@ import {
   generateCardCss,
 } from "@edgeever/shared/note-image-card";
 import { useDOMImperativeHandle, type DOMImperativeFactory, type DOMProps } from "expo/dom";
+import { createImageInsertTransaction, createNativeImageGalleryView, groupUploadedImages, NATIVE_IMAGE_GALLERY_CSS } from "@edgeever/shared/native-image-gallery";
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode, type Ref, type SetStateAction } from "react";
 import {
   createMobileImageUploadPlaceholderSource,
@@ -102,6 +105,7 @@ export interface LocalTiptapEditorRef extends DOMImperativeFactory {
   beginImageUpload: (uploadId: DOMValue, previewDataUrl: DOMValue) => void;
   cancelImageUpload: (uploadId: DOMValue) => void;
   completeImageUpload: (uploadId: DOMValue, imageUrl: DOMValue, alt: DOMValue) => void;
+  finishImageBatch: (sources: DOMValue) => void;
   appendAttachment: (attachmentUrl: DOMValue, filename: DOMValue, mimeType: DOMValue, byteSize: DOMValue) => void;
   removeResource: (targetJson: DOMValue) => void;
   renameResource: (targetJson: DOMValue, filename: DOMValue) => void;
@@ -149,6 +153,8 @@ type LocalTiptapViewerModeProps = LocalTiptapEditorSharedProps & {
   mode: "viewer";
   /** JSON: `{ alt: string; source: string }` for fullscreen image preview. */
   onImagePreview?: (payloadJson: string) => Promise<void>;
+  /** Enter note editing after a deliberate double tap on ordinary body content. */
+  onDoublePress?: () => Promise<void>;
 };
 
 type LocalTiptapEditorProps = LocalTiptapEditorModeProps | LocalTiptapViewerModeProps;
@@ -586,6 +592,7 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
   const onLoadResourceRef = useRef(props.onLoadResource);
   const onResourcePressRef = useRef(props.onResourcePress);
   const onImagePreviewRef = useRef(props.mode === "viewer" ? props.onImagePreview : undefined);
+  const onDoublePressRef = useRef(props.mode === "viewer" ? props.onDoublePress : undefined);
   const onPickImageRef = useRef(props.mode === "viewer" ? undefined : props.onPickImage);
   const onAiRequestRef = useRef(props.mode === "viewer" ? undefined : props.onAiRequest);
   const onAiCancelRef = useRef(props.mode === "viewer" ? undefined : props.onAiCancel);
@@ -642,6 +649,7 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
   onLoadResourceRef.current = props.onLoadResource;
   onResourcePressRef.current = props.onResourcePress;
   onImagePreviewRef.current = props.mode === "viewer" ? props.onImagePreview : undefined;
+  onDoublePressRef.current = props.mode === "viewer" ? props.onDoublePress : undefined;
   onPickImageRef.current = props.mode === "viewer" ? undefined : props.onPickImage;
   onAiRequestRef.current = props.mode === "viewer" ? undefined : props.onAiRequest;
   onAiCancelRef.current = props.mode === "viewer" ? undefined : props.onAiCancel;
@@ -686,13 +694,17 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
     // the Android bridge retry raced each other and could leave the WebView stuck.
     autofocus: false,
     extensions: [
-      StarterKit.configure({ codeBlock: false, link: { openOnClick: false } }),
+      StarterKit.configure({ codeBlock: false, link: false }),
+      EdgeEverLink.configure({ openOnClick: false }),
       NativeAttachmentMetadata,
       TaskList,
       TaskItem.configure({ nested: true }),
       MergeDivider,
       ...createEdgeEverMathematics(),
       mermaidCodeBlockExtension,
+      ImageGallery.extend({
+        addNodeView() { return createNativeImageGalleryView(() => props.locale); },
+      }),
       protectedImageExtension,
       searchHighlightExtension,
       TableKit.configure({
@@ -724,6 +736,17 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
           allowImagePreview: false,
           onImagePreview: onImagePreviewRef.current,
         }),
+        dblclick: (_view, event) => {
+          if (!isViewer || !onDoublePressRef.current) return false;
+          const target = event.target as HTMLElement | null;
+          if (!target || target.closest("a, button, img, input, textarea, select, .edgeever-image-node")) {
+            return false;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          void onDoublePressRef.current();
+          return true;
+        },
       },
     },
     onUpdate: ({ editor: activeEditor, transaction }) => {
@@ -839,6 +862,9 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
       previewDataUrlValue,
       pendingImageSelectionRef.current
     );
+    // The initial selection is consumed once; subsequent batch images follow
+    // the previous placeholder instead of replacing it.
+    pendingImageSelectionRef.current = null;
   }, [editor, isViewer, props.locale]);
 
   const cancelImageUpload = useCallback((uploadIdValue: DOMValue) => {
@@ -858,6 +884,12 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
       resolveUrl(imageUrlValue, props.baseUrl),
       typeof altValue === "string" ? altValue : ""
     );
+  }, [editor, props.baseUrl]);
+
+  const finishImageBatch = useCallback((sources: DOMValue) => {
+    if (!editor || !Array.isArray(sources)) return;
+    groupUploadedImages(editor, sources.filter((source): source is string => typeof source === "string")
+      .map((source) => resolveUrl(source, props.baseUrl)));
   }, [editor, props.baseUrl]);
 
   const appendAttachment = useCallback((
@@ -1244,6 +1276,7 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
       beginImageUpload,
       cancelImageUpload,
       completeImageUpload,
+      finishImageBatch,
       appendAttachment,
       setContent,
       flush,
@@ -1262,7 +1295,7 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
       pushAiStreamEvent,
       exportImage,
     }),
-    [appendAttachment, beginImageUpload, cancelImageUpload, completeImageUpload, editor, exportImage, flush, isViewer, pushAiStreamEvent, removeResource, renameResource, replaceAll, search, setContent]
+    [appendAttachment, beginImageUpload, cancelImageUpload, completeImageUpload, finishImageBatch, editor, exportImage, flush, isViewer, pushAiStreamEvent, removeResource, renameResource, replaceAll, search, setContent]
   );
 
   useEffect(() => {
@@ -2761,19 +2794,14 @@ const insertImageUploadPlaceholder = (
   if (!imageType) {
     return;
   }
-  editor.chain().command(({ tr, dispatch }) => {
-    const from = Math.min(selection?.from ?? tr.selection.from, tr.doc.content.size);
-    const to = Math.min(Math.max(selection?.to ?? tr.selection.to, from), tr.doc.content.size);
-    tr.replaceRangeWith(from, to, imageType.create({
+  const tr = createImageInsertTransaction(editor.state, {
       alt,
       src: source,
       title: previewDataUrl,
       width: DEFAULT_IMAGE_WIDTH_PERCENT,
-    }));
-    tr.setMeta(TRANSIENT_IMAGE_UPLOAD_META, true);
-    dispatch?.(tr);
-    return true;
-  }).run();
+  }, selection ?? editor.state.selection);
+  tr.setMeta(TRANSIENT_IMAGE_UPLOAD_META, true);
+  editor.view.dispatch(tr);
 };
 
 const replaceImageUploadPlaceholder = (
@@ -3174,6 +3202,12 @@ const getEditorStyles = (theme: "light" | "dark", options?: { viewer?: boolean }
   .edgeever-image-loading-label { text-align: center; }
   .edgeever-image-node > img, .edgeever-image-upload-result > img { display: block; width: 100%; margin: 0; border-radius: 10px; }
   .edgeever-image-node > img[hidden] { display: none; }
+  [data-edgeever-image-gallery] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 8px; margin: 14px 0; }
+  [data-edgeever-image-gallery][data-image-gallery-layout="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [data-edgeever-image-gallery][data-image-gallery-layout="1"] { grid-template-columns: minmax(0, 1fr); }
+  [data-edgeever-image-gallery] > .edgeever-image-node, [data-edgeever-image-gallery] > img { width: 100% !important; min-width: 0; height: 100%; min-height: 112px; max-height: 220px; margin: 0 !important; overflow: hidden; border-radius: 10px; background: ${theme === "dark" ? "#1e293b" : "#f1f5f9"}; }
+  [data-edgeever-image-gallery] > .edgeever-image-node > img, [data-edgeever-image-gallery] > img { width: 100%; height: 100%; min-height: 112px; max-height: 220px; object-fit: cover; }
+  ${NATIVE_IMAGE_GALLERY_CSS}
   .edgeever-image-node.is-selected > img, .edgeever-image-upload-result.is-selected > img { outline: 2px solid #0f766e; outline-offset: 3px; }
   .edgeever-image-actions { position: absolute; right: 8px; bottom: 8px; z-index: 3; display: inline-flex; width: 42px; height: 42px; appearance: none; align-items: center; justify-content: center; border: 1px solid ${theme === "dark" ? "#475569" : "#cbd5e1"}; border-radius: 999px; background: ${theme === "dark" ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.92)"}; color: ${theme === "dark" ? "#e2e8f0" : "#334155"}; font-size: 24px; font-weight: 700; line-height: 1; box-shadow: 0 3px 12px rgba(15, 23, 42, 0.2); }
   .edgeever-image-actions[hidden] { display: none; }

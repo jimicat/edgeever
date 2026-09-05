@@ -2,12 +2,13 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/tianma-if/edgeever?style=social)](https://github.com/tianma-if/edgeever/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/tianma-if/edgeever?style=social)](https://github.com/tianma-if/edgeever/network/members)
+[![Product Hunt](https://img.shields.io/badge/Product%20Hunt-Pre--Launch-ea532a?style=social&logo=product-hunt)](https://www.producthunt.com/products/edgeever?launch=edgeever&utm_source=badge-featured&utm_medium=badge&utm_campaign=edgeever)
 
 简体中文 | [English](README.md)
 
-> **EdgeEver：开源、原生支持 AI、可自由部署的自托管「印象笔记」替代方案。**
+> **EdgeEver：开源、原生支持 AI、可自由部署的自托管知识库与「印象笔记」替代方案。**
 
-EdgeEver 是一款现代化的开源笔记工作区。它为你找回经典印象笔记的三栏高效体验，同时具备完全开放的数据架构与原生 AI Agent 联动能力，让个人知识沉淀更轻量、更自由。
+EdgeEver 是一款现代化的开源笔记与个人知识库工作区。它为你找回经典印象笔记的三栏高效体验，同时具备完全开放的数据架构与原生 AI Agent 联动能力，让个人知识沉淀更轻量、更自由。
 
 > 💡 **终身免服务器，100% 免费**
 > EdgeEver 可以免费运行在 Cloudflare 配额内，无需购买或维护服务器；希望使用 VPS、NAS 或家庭服务器的用户，也可以通过 Docker 部署同一套应用。
@@ -33,14 +34,25 @@ EdgeEver 是一款现代化的开源笔记工作区。它为你找回经典印�
 
 公开演示环境会在每天凌晨 3:00（北京时间）自动重置并恢复示例笔记，请不要保存私密内容。
 
+## 客户端下载
+
+<p>
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/macos.svg" alt="下载 macOS 客户端" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/windows.svg" alt="下载 Windows 客户端" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://play.google.com/store/apps/details?id=org.edgeever.mobile"><img src="assets/readme/platforms/google-play.svg" alt="从 Google Play 下载 Android 客户端" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://apps.apple.com/us/app/edgeever/id6792625631"><img src="assets/readme/platforms/app-store.svg" alt="从 App Store 下载 iOS 客户端" width="40" height="40" /></a>
+</p>
+
+iOS 客户端需要使用非中国大陆区 Apple ID 下载。
+
 ## 功能
 
-- **自由选择部署方式**：同一套应用既可免费运行于 Cloudflare Serverless，也可通过 Docker 部署到 VPS、NAS 或家庭服务器。按 Cloudflare 免费存储额度估算，个人部署可容纳约 15 万条短笔记和约 5 万张图片；Docker 存储可按需扩展，轻松承载百万级笔记与海量图片。
+- **自由选择部署方式**：既可免费运行于 Cloudflare Serverless，也可通过 Docker 部署到 VPS、NAS 或家庭服务器。按 Cloudflare 免费存储额度估算，个人部署可容纳约 15 万条短笔记和约 5 万张图片；Docker 存储可按需扩展，轻松承载百万级笔记与海量图片。
 - **数据开放，不设围墙**：基于标准 SQLite 存储，提供 REST API、MCP 与 CLI 接口。数据随时可读可导，不再担心被任何特定平台绑定。
 - **无损 ZIP 打包与无缝迁移**：一键打包导出包含 Markdown、Front Matter、嵌套目录及附件的完整档案，同时保留历史版本与结构化数据，方便在不同实例间完整还原。
 - **原生 AI Agent 智脑联动**：内置 MCP（Model Context Protocol）协议，支持 Claude Code、Codex、Antigravity 等 AI 助手直接读取与整理笔记，也可与 Notion Database、飞书多维表格轻松打通。
 - **接入自己的 AI 模型**：支持添加多个 OpenAI、Anthropic、Gemini 兼容服务与第三方中转平台，在编辑器中随时对全文或选区进行智能总结、要点提炼、语法校对、翻译与续写润色。
-- **插件扩展能力**：支持从插件市场安装客户端插件与主题，扩展笔记操作、编辑器命令和自定义面板等能力。
+- **丰富的插件 API**：可通过[插件开发文档](docs/plugin-development.zh-CN.md)扩展 EdgeEver。
 - **多端无缝同步，无设备限制**：自托管数据无商业限制，摆脱免费账号仅限 2 台设备的束缚，在 PC、平板与手机上随心同步。
 - **经典三栏布局与专注模式**：笔记本树、笔记列表与编辑区一目了然；桌面端一键开启专注模式，让思绪尽情铺满屏幕。
 - **无限层级笔记本**：轻松构建清晰的多级目录结构。
@@ -52,9 +64,10 @@ EdgeEver 是一款现代化的开源笔记工作区。它为你找回经典印�
 - **公开笔记分享**：支持公开分享笔记，并可随时取消分享。
 - **移动 App 微信公众号文章剪藏**：在手机上将微信公众号文章分享至 EdgeEver，即可提取正文并保存为可继续编辑的笔记。
 - **智能前端图片压缩**：图片上传前在浏览器端静默完成压缩，常见截图与大图精简 50%-90% 体积，加载更迅速、存储更省心。
-- **通用文件附件支持**：支持轻松上传并插入 PDF、Office 文档、压缩包及音视频等各种附件。
+- **通用文件附件支持**：支持轻松上传并插入 PDF、Office 文档、压缩包及音视频等各种附件；通过分片上传与流式处理，安全支持最大 1 GiB 附件。
 - **高效多选与批量操作**：支持笔记批量合并、批量移动，以及笔记本拖拽排序与层级调整。
 - **离线草稿与同步队列**：网络不稳定时自动保存离线草稿，恢复连线后自动入队同步。
+- **登录防暴力破解保护**：服务端按账号与 IP 记录失败登录并自动限流、冷却，降低暴力破解与密码喷洒攻击风险，守护私密笔记数据。
 - **多账号与个人空间隔离**：单实例支持创建多个独立账号，用户数据相互隔离，配备直观的管理员账号管理与安全加密机制。
 - **全平台多端覆盖**：支持 Web、[Android](https://play.google.com/store/apps/details?id=org.edgeever.mobile)、[macOS](https://github.com/tianma-if/edgeever/releases)、[Windows](https://github.com/tianma-if/edgeever/releases/latest) 和 [iOS](https://apps.apple.com/us/app/edgeever/id6792625631)；网页裁剪插件支持 [Chrome](https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo)、[Edge](https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo) 和 [Firefox](https://addons.mozilla.org/zh-CN/firefox/addon/edgeever-web-clipper/)。
 
@@ -71,11 +84,13 @@ Cloudflare 在线部署可以选择以下两种方式之一：
 ```text
 请在线完成 EdgeEver 部署：
 1. Fork https://github.com/tianma-if/edgeever。
-2. 将这个 Fork 导入 Cloudflare Workers & Pages。
-3. 创建 D1 `edgeever` 与 R2 `edgeever-resources`，设置
-   `EDGE_EVER_AUTH_PASSWORD` Worker Secret，并配置生产环境 `main` 构建。
-4. 启动首次构建，验证 `/api/health`、`/api/openapi.json` 和登录。
-5. 启用并手动运行一次名为 `Update deployed EdgeEver` 的 GitHub Actions 工作流，
+2. 在 Cloudflare 中创建 D1 `edgeever` 与 R2 `edgeever-resources`。
+3. 将这个 Fork 导入 Cloudflare Workers & Pages，并将 `main` 设为生产分支。
+4. 添加一个名为 `EDGE_EVER_AUTH_PASSWORD` 的 Worker Secret，值为用户自行设置的
+   管理员登录密码，建议使用至少 32 个字符且仅用于此实例的强密码。
+5. 启动首次构建，验证 `/api/health`、`/api/openapi.json`，并使用用户名 `admin`
+   和配置的密码验证登录。
+6. 启用并手动运行一次名为 `Update deployed EdgeEver` 的 GitHub Actions 工作流，
    以便后续自动同步更新，持续获得 EdgeEver 最新的产品特性和问题修复。
 ```
 
@@ -83,13 +98,14 @@ Cloudflare 在线部署可以选择以下两种方式之一：
 
 ### 方案二：手动在线部署
 
-仅需在网页端完成 5 步极简配置：
+仅需在网页端完成 6 步配置：
 
 1. **Fork 仓库**：在 GitHub 点击右上角 **Fork**，将项目 Fork 到您的个人账户下。
-2. **启用 Actions**：进入 Fork 的 **Actions** 标签页，点击 **I understand my workflows, go ahead and enable them**，确保名为 **Update deployed EdgeEver** 的 GitHub Actions 工作流能够自动运行，从而持续获得 **EdgeEver** 最新的产品特性和问题修复。
-3. **导入 Cloudflare**：登录 Cloudflare 控制台，进入 **Workers & Pages**，选择导入该 Fork 仓库。
-4. **创建资源与登录凭据**：创建 D1 `edgeever` 与 R2 `edgeever-resources`，并添加 Worker Secret `EDGE_EVER_AUTH_PASSWORD` 作为管理员登录密码。binding 由部署命令生成，不要修改 Fork 中的文件。
-5. **启动构建与验证**：导入仓库后直接启动首次构建。部署完成后访问 `/api/health`，确认返回 `200` 即可开始使用。
+2. **创建 Cloudflare 资源**：创建 D1 `edgeever` 与 R2 `edgeever-resources`。
+3. **导入并配置项目**：在 Cloudflare **Workers & Pages** 中导入该 Fork，并将 `main` 设为生产分支。binding 由部署命令生成，不要修改 Fork 中的文件。
+4. **设置管理员密码**：添加一个名为 `EDGE_EVER_AUTH_PASSWORD` 的 Worker Secret，并将其值设为您要使用的管理员登录密码。建议使用至少 32 个字符且仅用于此实例的强密码。
+5. **首次构建与验证**：启动首次构建。部署完成后访问 `/api/health`，确认返回 `200`，并使用用户名 `admin` 和配置的密码验证登录。
+6. **启用自动更新**：进入 Fork 的 **Actions** 标签页，点击 **I understand my workflows, go ahead and enable them**，然后手动运行一次 **Update deployed EdgeEver**，确保后续能够自动获得 EdgeEver 的最新功能与修复。
 
 > 📖 包含具体参数与构建命令的详细步骤，请查看 [在线部署完整文档](docs/deploy-cloudflare-button.zh-CN.md)。
 
@@ -129,17 +145,6 @@ EdgeEver 官方容器镜像托管于 GitHub Container Registry（GHCR）。部�
   <a href="https://addons.mozilla.org/zh-CN/firefox/addon/edgeever-web-clipper/"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/firefox/firefox.svg" alt="为 Firefox 安装 EdgeEver 网页裁剪插件" width="36" height="36" /></a>
 </p>
 
-## 客户端下载
-
-<p>
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="apps/web/public/icons/platforms/macos.svg" alt="下载 macOS 客户端" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="apps/web/public/icons/platforms/windows.svg" alt="下载 Windows 客户端" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://play.google.com/store/apps/details?id=org.edgeever.mobile"><img src="apps/web/public/icons/platforms/google-play.svg" alt="从 Google Play 下载 Android 客户端" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://apps.apple.com/us/app/edgeever/id6792625631"><img src="apps/web/public/icons/platforms/app-store.svg" alt="从 App Store 下载 iOS 客户端" width="40" height="40" /></a>
-</p>
-
-iOS 客户端需要使用非中国大陆区 Apple ID 下载。
-
 ## 社区与反馈
 
 - Bug、功能建议和部署问题请优先提交 [GitHub Issues](https://github.com/tianma-if/edgeever/issues)，方便后续用户检索和复用解决方案。
@@ -154,6 +159,10 @@ iOS 客户端需要使用非中国大陆区 Apple ID 下载。
 <p align="center">
   <img src="assets/wechat-group-qr.jpg" alt="EdgeEver AI 交流群二维码" width="260" />
 </p>
+
+## 插件与主题
+
+EdgeEver 的 Web 与桌面端支持安装在当前设备的插件和无代码主题，可从插件市场、GitHub 或 Manifest 地址安装。开发者可使用 `@edgeever/plugin-api`，详情参阅[插件开发文档](docs/plugin-development.zh-CN.md)。
 
 ## 技术栈
 
@@ -173,6 +182,8 @@ iOS 客户端需要使用非中国大陆区 Apple ID 下载。
 bun install
 bun run dev
 ```
+
+本地开发默认自动登录，首次账号为 `owner` / `edgeever-local-dev`；测试登录页可主动退出登录。
 
 ## 目录结构
 
